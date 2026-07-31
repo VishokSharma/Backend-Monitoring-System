@@ -18,10 +18,11 @@ export async function runRequestAggregation() {
   const bucketStart = currentMinuteStart - ONE_MINUTE;
   const bucketEnd = currentMinuteStart;
 
-  console.log("Request aggregation for:", new Date(bucketStart));
-  console.log("Now:", new Date(now));
-  console.log("Bucket Start:", new Date(bucketStart));
-  console.log("Bucket End:", new Date(bucketEnd));
+// AFTER
+// removed — or gate behind a DEBUG flag if you want it locally:
+if (process.env.DEBUG_AGGREGATION) {
+  console.log("Request aggregation bucket:", new Date(bucketStart), "→", new Date(bucketEnd));
+}
 
   const rawMetrics = await prisma.requestMetric.findMany({
     where: {
