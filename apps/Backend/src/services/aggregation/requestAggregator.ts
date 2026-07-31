@@ -51,26 +51,34 @@ export async function runRequestAggregation() {
 
     const totalRequests = metrics.length;
 
-    const successCount = metrics.filter(
-      m => m.statusCode >= 200 && m.statusCode < 300
-    ).length;
 
-    const clientErrorCount = metrics.filter(
-      m => m.statusCode >= 400 && m.statusCode < 500
-    ).length;
+ let successCount = 0;
+ let clientErrorCount = 0;
+ let serverErrorCount = 0;
+ let latencySum = 0;
+ let maxResponseTime = 0;
+ const latencies: number[] = [];
 
-    const serverErrorCount = metrics.filter(
-      m => m.statusCode >= 500
-    ).length;
+ for (const m of metrics) {
+   if (m.statusCode >= 200 && m.statusCode < 300) {
+     successCount++;
+   } else if (m.statusCode >= 400 && m.statusCode < 500) {
+     clientErrorCount++;
+   } else if (m.statusCode >= 500) {
+     serverErrorCount++;
+   }
 
-    const latencies = metrics.map(m => m.latencyMs);
+   latencies.push(m.latencyMs);
+   latencySum += m.latencyMs;
 
-    const avgResponseTime =
-      latencies.reduce((a, b) => a + b, 0) / latencies.length;
+   if (m.latencyMs > maxResponseTime) {
+     maxResponseTime = m.latencyMs;
+   }
+ }
 
-    const maxResponseTime = Math.max(...latencies);
+const avgResponseTime = latencySum / latencies.length;
+const p95ResponseTime = calculateP95(latencies);
 
-    const p95ResponseTime = calculateP95(latencies);
 
     await prisma.requestMetricAggregate.upsert({
       where: {
