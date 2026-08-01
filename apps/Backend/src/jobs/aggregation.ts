@@ -35,7 +35,7 @@ export function startAggregationJob() {
     await runSystemDayAggregation();
     await runRequestDayAggregation();
   } catch (error) {
-    //console.error("Day aggregation error:", error);
+   console.error("Day aggregation error:", error);
   }
 });
 }
